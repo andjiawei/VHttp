@@ -9,7 +9,6 @@ import com.jiawei.httplib.utils.GsonUtils;
 
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import okhttp3.Call;
@@ -20,7 +19,7 @@ import okhttp3.Response;
  * Created by jiawei on 2017/6/12.
  */
 
-public class JsonCallback<T> extends ICallback<T> {
+public abstract class JsonCallback<T> extends ICallback<T> {
 
     protected final int NETWORK_ERROR = -1; // the network relative error
     protected final int JSON_ERROR = -2; // the JSON relative error
@@ -29,11 +28,9 @@ public class JsonCallback<T> extends ICallback<T> {
 
     protected final String COOKIE_STORE = "Set-Cookie"; // decide the server it
 
-    private  DisposeDataListener mListener;
     private  Handler mHandler;
 
-    public JsonCallback(DisposeDataListener listener) {
-        mListener = listener;
+    public JsonCallback() {
         mHandler = new Handler(Looper.getMainLooper());
     }
 
@@ -42,10 +39,12 @@ public class JsonCallback<T> extends ICallback<T> {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                mListener.onFailure(new OkHttpException(NETWORK_ERROR, e));
+                failure(new OkHttpException(NETWORK_ERROR, e));
             }
         });
     }
+
+    public abstract void failure(OkHttpException e) ;
 
     @Override
     public void onResponse(Call call, Response response) throws IOException {
@@ -59,9 +58,9 @@ public class JsonCallback<T> extends ICallback<T> {
                 /**
                  * handle the cookie
                  */
-                if (mListener instanceof DisposeHandleCookieListener) {
-                    ((DisposeHandleCookieListener) mListener).onCookie(cookieLists);
-                }
+//                if (mListener instanceof DisposeHandleCookieListener) {
+//                    ((DisposeHandleCookieListener) mListener).onCookie(cookieLists);
+//                }
             }
         });
     }
@@ -78,31 +77,28 @@ public class JsonCallback<T> extends ICallback<T> {
 
     private void handleResponse(String result) {
         if (TextUtils.isEmpty(result)) {
-            mListener.onFailure(new OkHttpException(NETWORK_ERROR, EMPTY_MSG));
+            failure(new OkHttpException(NETWORK_ERROR, EMPTY_MSG));
             return;
         }
 
         try {
-            Type type =((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-//          Class<T> type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-//            String classname=type.toString().split(" ")[1];
-            if (type instanceof Class)
-            {
-                throw new RuntimeException("Missing type parameter.");
-            }
+//            Type type =((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+          Class<T> type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
             if (type == String.class) {
-//                mListener.onSuccess(result);
+                success((T)result);
             } else {
                 T obj= GsonUtils.get().fromJson(result,type);
                 if (obj != null) {
-                    mListener.onSuccess(obj);
+                    success(obj);
                 } else {
-                    mListener.onFailure(new OkHttpException(JSON_ERROR, EMPTY_MSG));
+                    failure(new OkHttpException(JSON_ERROR, EMPTY_MSG));
                 }
             }
         } catch (Exception e) {
-            mListener.onFailure(new OkHttpException(OTHER_ERROR, e.getMessage()));
+            failure(new OkHttpException(OTHER_ERROR, e.getMessage()));
             e.printStackTrace();
         }
     }
+
+    protected abstract void success(T obj);
 }

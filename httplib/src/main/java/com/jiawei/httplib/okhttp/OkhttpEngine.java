@@ -1,5 +1,7 @@
 package com.jiawei.httplib.okhttp;
 
+import android.os.Handler;
+
 import com.jiawei.httplib.callback.DisposeDataHandle;
 import com.jiawei.httplib.callback.DisposeDataListener;
 import com.jiawei.httplib.callback.DisposeProgressListener;
@@ -16,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +26,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 
 import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.FormBody;
 import okhttp3.Headers;
 import okhttp3.Interceptor;
@@ -40,9 +44,12 @@ import okhttp3.Response;
  */
 
 public class OkhttpEngine {
+
+    protected static final String COOKIE_STORE = "Set-Cookie"; // decide the server it
     private static final int TIME_OUT = 30;
 
     private static OkHttpClient mOkHttpClient;
+    private static Handler mHandler=new Handler();
 
     static {
         //使用builder模式 做一些参数配置
@@ -95,16 +102,29 @@ public class OkhttpEngine {
         mOkHttpClient.newBuilder().sslSocketFactory(HttpsUtils.getSslSocketFactory(certificates, null, null)).build();
     }
 
-    public static Call get(String url,RequestParams params,RequestParams headers, JsonCallback callback) {
+    public static Call get(String url, RequestParams params, RequestParams headers, final JsonCallback callback) {
         Request getRequest = createGetRequest(url, params, headers);
         Call call = mOkHttpClient.newCall(getRequest);
-        call.enqueue(callback);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onFailure(call,e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                callback.onResponse(call,response);
+//                final String result = response.body().string();
+//                final ArrayList<String> cookieLists = handleCookie(response.headers());
+//                handleResponse(result);
+            }
+        });
         return call;
     }
 
     public static Call post(Request request, DisposeDataListener listener) {
         Call call = mOkHttpClient.newCall(request);
-        call.enqueue(new JsonCallback(listener));
+//        call.enqueue(new JsonCallback(listener));
         return call;
     }
 
@@ -209,6 +229,16 @@ public class OkhttpEngine {
                 .get()
                 .headers(mHeader)
                 .build();
+    }
+
+    private static ArrayList<String> handleCookie(Headers headers) {
+        ArrayList<String> tempList = new ArrayList<>();
+        for (int i = 0; i < headers.size(); i++) {
+            if (headers.name(i).equalsIgnoreCase(COOKIE_STORE)) {
+                tempList.add(headers.value(i));
+            }
+        }
+        return tempList;
     }
 
 }

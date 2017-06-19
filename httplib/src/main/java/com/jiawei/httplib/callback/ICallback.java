@@ -1,13 +1,17 @@
 package com.jiawei.httplib.callback;
 
-import okhttp3.Callback;
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Response;
 
 /**
  * Created by jiawei on 2017/6/19.
  */
 
-public abstract class ICallback<T> implements Callback {
-//    Type type =((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+public abstract class ICallback<T> {
 
+   public abstract void onFailure(Call call, IOException e);
 
+    public abstract void onResponse(Call call, Response response) throws IOException;
 }
