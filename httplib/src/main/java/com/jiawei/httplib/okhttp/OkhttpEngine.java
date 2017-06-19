@@ -1,6 +1,7 @@
 package com.jiawei.httplib.okhttp;
 
 import com.jiawei.httplib.callback.DisposeDataHandle;
+import com.jiawei.httplib.callback.DisposeDataListener;
 import com.jiawei.httplib.callback.DisposeProgressListener;
 import com.jiawei.httplib.callback.FileCallback;
 import com.jiawei.httplib.callback.JsonCallback;
@@ -94,15 +95,16 @@ public class OkhttpEngine {
         mOkHttpClient.newBuilder().sslSocketFactory(HttpsUtils.getSslSocketFactory(certificates, null, null)).build();
     }
 
-    public static Call get(Request request, DisposeDataHandle handle) {
-        Call call = mOkHttpClient.newCall(request);
-        call.enqueue(new JsonCallback(handle));
+    public static Call get(String url,RequestParams params,RequestParams headers, JsonCallback callback) {
+        Request getRequest = createGetRequest(url, params, headers);
+        Call call = mOkHttpClient.newCall(getRequest);
+        call.enqueue(callback);
         return call;
     }
 
-    public static Call post(Request request, DisposeDataHandle handle) {
+    public static Call post(Request request, DisposeDataListener listener) {
         Call call = mOkHttpClient.newCall(request);
-        call.enqueue(new JsonCallback(handle));
+        call.enqueue(new JsonCallback(listener));
         return call;
     }
 
@@ -145,7 +147,6 @@ public class OkhttpEngine {
                 .post(countingRequestBody)
                 .build();
 
-
         Call call = mOkHttpClient.newCall(request);
         call.enqueue(new UploadCallBack(listener));
         return call;
@@ -186,6 +187,28 @@ public class OkhttpEngine {
             }
         }
 
+    }
+
+    public static Request createGetRequest(String url, RequestParams params, RequestParams headers) {
+        StringBuilder urlBuilder = new StringBuilder(url).append("?");
+        if (params != null) {
+            for (Map.Entry<String, String> entry : params.urlParams.entrySet()) {
+                urlBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
+            }
+        }
+        //添加请求头
+        Headers.Builder mHeaderBuild = new Headers.Builder();
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.urlParams.entrySet()) {
+                mHeaderBuild.add(entry.getKey(), entry.getValue());
+            }
+        }
+        Headers mHeader = mHeaderBuild.build();
+        return new Request.Builder().
+                url(urlBuilder.substring(0, urlBuilder.length() - 1))
+                .get()
+                .headers(mHeader)
+                .build();
     }
 
 }

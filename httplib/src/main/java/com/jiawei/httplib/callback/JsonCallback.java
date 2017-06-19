@@ -2,17 +2,17 @@ package com.jiawei.httplib.callback;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import com.jiawei.httplib.exception.OkHttpException;
 import com.jiawei.httplib.utils.GsonUtils;
 
-import org.json.JSONObject;
-
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Headers;
 import okhttp3.Response;
 
@@ -20,7 +20,7 @@ import okhttp3.Response;
  * Created by jiawei on 2017/6/12.
  */
 
-public class JsonCallback implements Callback {
+public class JsonCallback<T> extends ICallback<T> {
 
     protected final int NETWORK_ERROR = -1; // the network relative error
     protected final int JSON_ERROR = -2; // the JSON relative error
@@ -29,13 +29,11 @@ public class JsonCallback implements Callback {
 
     protected final String COOKIE_STORE = "Set-Cookie"; // decide the server it
 
-    private final DisposeDataListener mListener;
-    private final Class<?> mClass;
-    private final Handler mHandler;
+    private  DisposeDataListener mListener;
+    private  Handler mHandler;
 
-    public JsonCallback(DisposeDataHandle handle) {
-        mListener = handle.mListener;
-        mClass = handle.mClass;
+    public JsonCallback(DisposeDataListener listener) {
+        mListener = listener;
         mHandler = new Handler(Looper.getMainLooper());
     }
 
@@ -56,6 +54,7 @@ public class JsonCallback implements Callback {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
+                // TODO: 2017/6/18 转换线程处理
                 handleResponse(result);
                 /**
                  * handle the cookie
@@ -77,21 +76,24 @@ public class JsonCallback implements Callback {
         return tempList;
     }
 
-    private void handleResponse(Object responseObj) {
-        if (responseObj == null || responseObj.toString().trim().equals("")) {
+    private void handleResponse(String result) {
+        if (TextUtils.isEmpty(result)) {
             mListener.onFailure(new OkHttpException(NETWORK_ERROR, EMPTY_MSG));
             return;
         }
 
         try {
-            /**
-             * 协议确定后看这里如何修改
-             */
-            JSONObject result = new JSONObject(responseObj.toString());
-            if (mClass == null) {
-                mListener.onSuccess(result);
+            Type type =((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+//          Class<T> type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+//            String classname=type.toString().split(" ")[1];
+            if (type instanceof Class)
+            {
+                throw new RuntimeException("Missing type parameter.");
+            }
+            if (type == String.class) {
+//                mListener.onSuccess(result);
             } else {
-                Object obj= GsonUtils.get().fromJson(responseObj.toString(),mClass);
+                T obj= GsonUtils.get().fromJson(result,type);
                 if (obj != null) {
                     mListener.onSuccess(obj);
                 } else {
