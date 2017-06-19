@@ -3,6 +3,7 @@ package com.jiawei.httplib.callback;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 
 import com.jiawei.httplib.exception.OkHttpException;
 
@@ -12,13 +13,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Response;
 
 /**
  * 专门处理文件下载回调
  */
-public class FileCallback implements Callback {
+public abstract class FileCallback extends ICallback {
     /**
      * the java layer exception, do not same to the logic error
      */
@@ -30,19 +30,17 @@ public class FileCallback implements Callback {
      */
     private static final int PROGRESS_MESSAGE = 0x01;
     private Handler mDeliveryHandler;
-    private DisposeProgressListener mListener;
     private String mFilePath;
     private int mProgress;
 
-    public FileCallback(DisposeDataHandle handle) {
-        this.mListener = (DisposeProgressListener) handle.mListener;
-        this.mFilePath = handle.mSource;
+    public FileCallback(String filePath) {
+        this.mFilePath = filePath;
         this.mDeliveryHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case PROGRESS_MESSAGE:
-                        mListener.onProgress((int) msg.obj);
+                        progress((int) msg.obj);
                         break;
                 }
             }
@@ -54,7 +52,7 @@ public class FileCallback implements Callback {
         mDeliveryHandler.post(new Runnable() {
             @Override
             public void run() {
-                mListener.onFailure(new OkHttpException(NETWORK_ERROR, ioexception));
+                failure(new OkHttpException(NETWORK_ERROR, ioexception));
             }
         });
     }
@@ -66,13 +64,15 @@ public class FileCallback implements Callback {
             @Override
             public void run() {
                 if (file != null) {
-                    mListener.onSuccess(file);
+                    success(file);
                 } else {
-                    mListener.onFailure(new OkHttpException(IO_ERROR, EMPTY_MSG));
+                    failure(new OkHttpException(IO_ERROR, EMPTY_MSG));
                 }
+
             }
         });
     }
+
 
     /**
      * 此时还在子线程中，不则调用回调接口
@@ -102,8 +102,11 @@ public class FileCallback implements Callback {
             while ((length = inputStream.read(buffer)) != -1) {
                 fos.write(buffer, 0, length);
                 currentLength += length;
-                //todo progress 待优化
+                //todo progress 待优化 sumLength为-1的处理
                 mProgress = (int) (currentLength / sumLength * 100);
+                Log.e("222", "currentLength: "+currentLength);
+                Log.e("222", "sumLength: "+sumLength);
+                Log.e("222", "mProgress: "+mProgress);
                 mDeliveryHandler.obtainMessage(PROGRESS_MESSAGE, mProgress).sendToTarget();
             }
             fos.flush();
@@ -140,4 +143,8 @@ public class FileCallback implements Callback {
             }
         }
     }
+
+    protected abstract void failure(OkHttpException e);
+    protected abstract void success(File file);
+    protected abstract void progress(int obj);
 }

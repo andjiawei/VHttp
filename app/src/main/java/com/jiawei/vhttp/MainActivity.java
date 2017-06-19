@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.jiawei.httplib.callback.DisposeProgressListener;
+import com.jiawei.httplib.callback.FileCallback;
 import com.jiawei.httplib.callback.JsonCallback;
 import com.jiawei.httplib.exception.OkHttpException;
 import com.jiawei.httplib.okhttp.OkhttpEngine;
@@ -16,13 +17,15 @@ import com.jiawei.httplib.other.User;
 
 import java.io.File;
 
+import static com.jiawei.vhttp.R.id.get;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        findViewById(R.id.get).setOnClickListener(this);
+        findViewById(get).setOnClickListener(this);
         findViewById(R.id.post).setOnClickListener(this);
         findViewById(R.id.download).setOnClickListener(this);
         findViewById(R.id.upload).setOnClickListener(this);
@@ -32,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()){
 
-            case R.id.get:
+            case get:
                 get();
                 break;
             case R.id.post:
@@ -59,13 +62,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             @Override
-            protected void success(User obj) {
+            public void success(User obj) {
                 Log.e("111", "success: 成功"+obj );
             }
         });
     }
-    private void post(){}
-    private void download(){}
+    private void post(){
+        String url = "http://api.stay4it.com/v1/public/core/?service=user.login";
+        //String content = "account=stay4it&password=123456";
+        RequestParams params=new RequestParams();
+        params.put("account","stay4it");
+        params.put("password","123456");
+        OkhttpEngine.post(url, params, null, new JsonCallback<String>() {
+            @Override
+            public void success(String obj) {
+                Log.e("111", "success: "+obj );
+            }
+
+            @Override
+            public void failure(OkHttpException e) {
+
+            }
+        });
+    }
+    private void download(){
+        String url = "http://172.30.68.144/dldir1.qq.com/qqfile/qq/TIM1.1.5/21175/TIM1.1.5.exe";
+        //todo 修改路径
+        String path = Environment.getExternalStorageDirectory() + File.separator + "test.jpg";
+
+        OkhttpEngine.post(url, null, null, new FileCallback(path) {
+            @Override
+            protected void failure(OkHttpException e) {
+                Log.e("222", "failure: " );
+            }
+
+            @Override
+            protected void success(File file) {
+                Log.e("222", "success: " );
+            }
+
+            @Override
+            protected void progress(int progress) {
+                Log.e("222", "progress: " +progress);
+            }
+        });
+    }
 
     private void upload() {
         File file = new File(Environment.getExternalStorageDirectory()+"/download/", "333.zip");

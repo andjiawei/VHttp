@@ -1,12 +1,10 @@
 package com.jiawei.httplib.okhttp;
 
 import android.os.Handler;
+import android.support.annotation.NonNull;
 
-import com.jiawei.httplib.callback.DisposeDataHandle;
-import com.jiawei.httplib.callback.DisposeDataListener;
 import com.jiawei.httplib.callback.DisposeProgressListener;
-import com.jiawei.httplib.callback.FileCallback;
-import com.jiawei.httplib.callback.JsonCallback;
+import com.jiawei.httplib.callback.ICallback;
 import com.jiawei.httplib.callback.UploadCallBack;
 import com.jiawei.httplib.cookie.SimpleCookieJar;
 import com.jiawei.httplib.https.HttpsUtils;
@@ -102,8 +100,14 @@ public class OkhttpEngine {
         mOkHttpClient.newBuilder().sslSocketFactory(HttpsUtils.getSslSocketFactory(certificates, null, null)).build();
     }
 
-    public static Call get(String url, RequestParams params, RequestParams headers, final JsonCallback callback) {
+    public static Call get(String url, RequestParams params, RequestParams headers, final ICallback callback) {
         Request getRequest = createGetRequest(url, params, headers);
+        Call call = performRequest(callback, getRequest);
+        return call;
+    }
+
+    @NonNull
+    private static Call performRequest(final ICallback callback, Request getRequest) {
         Call call = mOkHttpClient.newCall(getRequest);
         call.enqueue(new Callback() {
             @Override
@@ -114,23 +118,20 @@ public class OkhttpEngine {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 callback.onResponse(call,response);
-//                final String result = response.body().string();
-//                final ArrayList<String> cookieLists = handleCookie(response.headers());
-//                handleResponse(result);
             }
         });
         return call;
     }
 
-    public static Call post(Request request, DisposeDataListener listener) {
-        Call call = mOkHttpClient.newCall(request);
-//        call.enqueue(new JsonCallback(listener));
+    public static Call post(String url, RequestParams params, RequestParams headers, final ICallback callback) {
+        Request postRequest = createPostRequest(url, params, headers);
+        Call call = performRequest(callback, postRequest);
         return call;
     }
 
-    public static Call downloadFile(Request request, DisposeDataHandle handle) {
-        Call call = mOkHttpClient.newCall(request);
-        call.enqueue(new FileCallback(handle));
+    public static Call downloadFile(String url, RequestParams params, RequestParams headers, final ICallback callback) {
+        Request getRequest = createGetRequest(url, params, headers);
+        Call call = performRequest(callback, getRequest);
         return call;
     }
 
@@ -239,6 +240,29 @@ public class OkhttpEngine {
             }
         }
         return tempList;
+    }
+
+    public static Request createPostRequest(String url, RequestParams params, RequestParams headers) {
+        FormBody.Builder mFormBodyBuild = new FormBody.Builder();
+        if (params != null) {
+            for (Map.Entry<String, String> entry : params.urlParams.entrySet()) {
+                mFormBodyBuild.add(entry.getKey(), entry.getValue());
+            }
+        }
+        //添加请求头
+        Headers.Builder mHeaderBuild = new Headers.Builder();
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.urlParams.entrySet()) {
+                mHeaderBuild.add(entry.getKey(), entry.getValue());
+            }
+        }
+        FormBody mFormBody = mFormBodyBuild.build();
+        Headers mHeader = mHeaderBuild.build();
+        Request request = new Request.Builder().url(url).
+                post(mFormBody).
+                headers(mHeader)
+                .build();
+        return request;
     }
 
 }

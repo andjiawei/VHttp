@@ -2,7 +2,6 @@ package com.jiawei.httplib.callback;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import com.jiawei.httplib.exception.OkHttpException;
 
@@ -43,6 +42,5 @@ public class UploadCallBack implements Callback {
     @Override
     public void onResponse(Call call, Response response) throws IOException {
         final String result = response.body().string();
-        Log.e("1111", "onResponse: "+result);
     }
 }

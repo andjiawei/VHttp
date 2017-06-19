@@ -44,8 +44,6 @@ public abstract class JsonCallback<T> extends ICallback<T> {
         });
     }
 
-    public abstract void failure(OkHttpException e) ;
-
     @Override
     public void onResponse(Call call, Response response) throws IOException {
         final String result = response.body().string();
@@ -100,5 +98,7 @@ public abstract class JsonCallback<T> extends ICallback<T> {
         }
     }
 
-    protected abstract void success(T obj);
+    public abstract void success(T obj);
+    public abstract void failure(OkHttpException e) ;
+
 }
