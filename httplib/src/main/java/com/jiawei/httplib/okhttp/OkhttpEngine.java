@@ -3,7 +3,6 @@ package com.jiawei.httplib.okhttp;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 
-import com.jiawei.httplib.callback.DisposeProgressListener;
 import com.jiawei.httplib.callback.ICallback;
 import com.jiawei.httplib.callback.UploadCallBack;
 import com.jiawei.httplib.cookie.SimpleCookieJar;
@@ -39,6 +38,9 @@ import okhttp3.Response;
  * Created by jiawei on 2017/6/9.
  * <p>
  * okhttp的代理封装类
+ *
+ * {@link #get(String, RequestParams, RequestParams, ICallback)
+ *              }
  */
 
 public class OkhttpEngine {
@@ -135,7 +137,7 @@ public class OkhttpEngine {
         return call;
     }
 
-    public static Call uploadFile(String url, File file, Map<String, String> params, final DisposeProgressListener listener) {
+    public static Call uploadFile(String url, File file, Map<String, String> params, final UploadCallBack callback) {
         //todo 抽取内容 FormBody
         RequestBody formBody;
         if (file == null) {
@@ -158,8 +160,7 @@ public class OkhttpEngine {
             public void onRequestProgress(final long bytesWritten, final long contentLength)
             {
                 // TODO: 切换到主线程
-                listener.onProgress(bytesWritten * 1.0f / contentLength);
-
+                callback.onProgress(bytesWritten * 1.0f / contentLength);
             }
         });
 
@@ -168,8 +169,7 @@ public class OkhttpEngine {
                 .post(countingRequestBody)
                 .build();
 
-        Call call = mOkHttpClient.newCall(request);
-        call.enqueue(new UploadCallBack(listener));
+        Call call = performRequest(callback, request);
         return call;
     }
 
@@ -210,7 +210,7 @@ public class OkhttpEngine {
 
     }
 
-    public static Request createGetRequest(String url, RequestParams params, RequestParams headers) {
+    private static Request createGetRequest(String url, RequestParams params, RequestParams headers) {
         StringBuilder urlBuilder = new StringBuilder(url).append("?");
         if (params != null) {
             for (Map.Entry<String, String> entry : params.urlParams.entrySet()) {
@@ -264,5 +264,4 @@ public class OkhttpEngine {
                 .build();
         return request;
     }
-
 }

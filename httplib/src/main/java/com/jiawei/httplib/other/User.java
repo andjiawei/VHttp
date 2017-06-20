@@ -8,73 +8,127 @@ import java.util.List;
 
 public class User {
 
-
     /**
-     * ret : 200
-     * msg : 有心课堂,传递给你的不仅仅是技术✈️
-     * data : [{"name":0,"timestamp":1497856497000}]
+     * data : {"blog":"http://blog.yanzhenjie.com","name":"严振杰","projectList":[{"comment":"Anroid 客户端标准协议网络框架。","id":0,"name":"NoHttp","url":"https://github.com/yanzhenjie/NoHttp"},{"comment":"RecyclerView侧滑菜单、侧滑删除、长按拖拽Item。","id":1,"name":"SwipeRecyclerView","url":"https://github.com/yanzhenjie/SwipeRecyclerView"},{"comment":"Android搭建局域网服务器网络框架。","id":2,"name":"AndServer","url":"https://github.com/yanzhenjie/AndServer"},{"comment":"Anroid6.0运行时权限管理框架。","id":3,"name":"AndPermission","url":"https://github.com/yanzhenjie/AndPermission"}],"url":"http://www.yanzhenjie.com"}
+     * error : 1
      */
 
-    private int ret;
-    private String msg;
-    private List<DataBean> data;
+    private DataBean data;
+    private int error;
 
-    public int getRet() {
-        return ret;
-    }
-
-    public void setRet(int ret) {
-        this.ret = ret;
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
-    public List<DataBean> getData() {
+    public DataBean getData() {
         return data;
     }
 
-    public void setData(List<DataBean> data) {
+    public void setData(DataBean data) {
         this.data = data;
+    }
+
+    public int getError() {
+        return error;
+    }
+
+    public void setError(int error) {
+        this.error = error;
     }
 
     public static class DataBean {
         /**
-         * name : 0
-         * timestamp : 1497856497000
+         * blog : http://blog.yanzhenjie.com
+         * name : 严振杰
+         * projectList : [{"comment":"Anroid 客户端标准协议网络框架。","id":0,"name":"NoHttp","url":"https://github.com/yanzhenjie/NoHttp"},{"comment":"RecyclerView侧滑菜单、侧滑删除、长按拖拽Item。","id":1,"name":"SwipeRecyclerView","url":"https://github.com/yanzhenjie/SwipeRecyclerView"},{"comment":"Android搭建局域网服务器网络框架。","id":2,"name":"AndServer","url":"https://github.com/yanzhenjie/AndServer"},{"comment":"Anroid6.0运行时权限管理框架。","id":3,"name":"AndPermission","url":"https://github.com/yanzhenjie/AndPermission"}]
+         * url : http://www.yanzhenjie.com
          */
 
-        private int name;
-        private long timestamp;
+        private String blog;
+        private String name;
+        private String url;
+        private List<ProjectListBean> projectList;
 
-        public int getName() {
+        public String getBlog() {
+            return blog;
+        }
+
+        public void setBlog(String blog) {
+            this.blog = blog;
+        }
+
+        public String getName() {
             return name;
         }
 
-        public void setName(int name) {
+        public void setName(String name) {
             this.name = name;
         }
 
-        public long getTimestamp() {
-            return timestamp;
+        public String getUrl() {
+            return url;
         }
 
-        public void setTimestamp(long timestamp) {
-            this.timestamp = timestamp;
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
+        public List<ProjectListBean> getProjectList() {
+            return projectList;
+        }
+
+        public void setProjectList(List<ProjectListBean> projectList) {
+            this.projectList = projectList;
+        }
+
+        public static class ProjectListBean {
+            /**
+             * comment : Anroid 客户端标准协议网络框架。
+             * id : 0
+             * name : NoHttp
+             * url : https://github.com/yanzhenjie/NoHttp
+             */
+
+            private String comment;
+            private int id;
+            private String name;
+            private String url;
+
+            public String getComment() {
+                return comment;
+            }
+
+            public void setComment(String comment) {
+                this.comment = comment;
+            }
+
+            public int getId() {
+                return id;
+            }
+
+            public void setId(int id) {
+                this.id = id;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            public String getUrl() {
+                return url;
+            }
+
+            public void setUrl(String url) {
+                this.url = url;
+            }
         }
     }
 
     @Override
     public String toString() {
         return "User{" +
-                "ret=" + ret +
-                ", msg='" + msg + '\'' +
-                ", data=" + data +
+                "data=" + data +
+                ", error=" + error +
                 '}';
     }
 }

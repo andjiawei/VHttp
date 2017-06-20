@@ -8,24 +8,21 @@ import com.jiawei.httplib.exception.OkHttpException;
 import java.io.IOException;
 
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Response;
 
 /**
  * Created by jiawei on 2017/6/14.
  */
 
-public class UploadCallBack implements Callback {
+public abstract class UploadCallBack extends ICallback {
 
     // TODO: 2017/6/14 统一错误码
     protected final int NETWORK_ERROR = -1; // the network relative error
     protected final int IO_ERROR = -2; // the JSON relative error
     protected final String EMPTY_MSG = "";
-    private final DisposeProgressListener mListener;
 
     private Handler mHandler;
-    public UploadCallBack(DisposeProgressListener listener) {
-        mListener =listener;
+    public UploadCallBack() {
         mHandler=new Handler(Looper.getMainLooper());
     }
 
@@ -34,13 +31,26 @@ public class UploadCallBack implements Callback {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                mListener.onFailure(new OkHttpException(NETWORK_ERROR, e));
+                failure(new OkHttpException(NETWORK_ERROR, e));
             }
         });
     }
 
+    public abstract void failure(OkHttpException e);
+
     @Override
-    public void onResponse(Call call, Response response) throws IOException {
+    public void onResponse(Call call, final Response response) throws IOException {
         final String result = response.body().string();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                success(result);
+            }
+        });
     }
+
+    public abstract void success(String result);
+
+    public abstract void onProgress(float progress);
+
 }

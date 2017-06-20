@@ -7,9 +7,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.jiawei.httplib.callback.DisposeProgressListener;
 import com.jiawei.httplib.callback.FileCallback;
 import com.jiawei.httplib.callback.JsonCallback;
+import com.jiawei.httplib.callback.UploadCallBack;
 import com.jiawei.httplib.exception.OkHttpException;
 import com.jiawei.httplib.okhttp.OkhttpEngine;
 import com.jiawei.httplib.okhttp.RequestParams;
@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        findViewById(get).setOnClickListener(this);
+        findViewById(R.id.get).setOnClickListener(this);
         findViewById(R.id.post).setOnClickListener(this);
         findViewById(R.id.download).setOnClickListener(this);
         findViewById(R.id.upload).setOnClickListener(this);
@@ -34,7 +34,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-
             case get:
                 get();
                 break;
@@ -52,9 +51,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void get(){
-        String url="http://api.stay4it.com/v1/public/core/";
+        String url="http://api.nohttp.net/jsonObject";
         RequestParams params= new RequestParams();
-        params.put("service","user.getAll");
+        params.put("name","yanzhenjie");
+        params.put("pwd","123");
         OkhttpEngine.get(url, params, null, new JsonCallback<User>() {
             @Override
             public void failure(OkHttpException e) {
@@ -68,11 +68,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
     private void post(){
-        String url = "http://api.stay4it.com/v1/public/core/?service=user.login";
-        //String content = "account=stay4it&password=123456";
+        //这里替换为你的url 这个貌似失效了
+        String url="http://api.nohttp.net/jsonArray";
         RequestParams params=new RequestParams();
-        params.put("account","stay4it");
-        params.put("password","123456");
+        params.put("name","yanzhenjie");
+        params.put("pwd","123");
         OkhttpEngine.post(url, params, null, new JsonCallback<String>() {
             @Override
             public void success(String obj) {
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void download(){
         String url = "http://172.30.68.144/dldir1.qq.com/qqfile/qq/TIM1.1.5/21175/TIM1.1.5.exe";
         //todo 修改路径
-        String path = Environment.getExternalStorageDirectory() + File.separator + "test.jpg";
+        String path = Environment.getExternalStorageDirectory() + File.separator + "test.exe";
 
         OkhttpEngine.post(url, null, null, new FileCallback(path) {
             @Override
@@ -115,21 +115,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(MainActivity.this, "文件不存在，请修改文件路径", Toast.LENGTH_SHORT).show();
             return;
         }
-        OkhttpEngine.uploadFile("http://api.nohttp.net/upload", file, null, new DisposeProgressListener() {
+        OkhttpEngine.uploadFile("http://api.nohttp.net/upload", file, null, new UploadCallBack() {
+            @Override
+            public void failure(OkHttpException e) {
+                Log.e("111", "failure: ");
+            }
+
+            @Override
+            public void success(String result) {
+                Log.e("111", "success: ");
+            }
+
             @Override
             public void onProgress(float progress) {
-                Log.e("progress", "onProgress: "+progress );
-            }
-
-            @Override
-            public void onSuccess(Object responseObj) {
-                Log.e("onSuccess", "onSuccess: "+responseObj.toString() );
-
-            }
-
-            @Override
-            public void onFailure(Object reasonObj) {
-                Log.e("onFailure", "onFailure: "+reasonObj.toString() );
+                Log.e("111", "onProgress: ");
             }
         });
     }
