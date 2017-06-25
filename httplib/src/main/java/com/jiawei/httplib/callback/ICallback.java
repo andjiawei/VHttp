@@ -14,4 +14,8 @@ public abstract class ICallback<T>{
    public abstract void onFailure(Call call, IOException e);
 
     public abstract void onResponse(Call call, Response response) throws IOException;
+
+    public void onProgress(float progress) {
+    }
+
 }

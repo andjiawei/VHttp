@@ -146,5 +146,5 @@ public abstract class FileCallback extends ICallback {
 
     protected abstract void failure(OkHttpException e);
     protected abstract void success(File file);
-    protected abstract void progress(int obj);
+    protected abstract void progress(int progress);
 }

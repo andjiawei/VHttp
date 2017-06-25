@@ -12,14 +12,17 @@ import com.jiawei.httplib.callback.JsonCallback;
 import com.jiawei.httplib.callback.UploadCallBack;
 import com.jiawei.httplib.exception.OkHttpException;
 import com.jiawei.httplib.okhttp.OkhttpEngine;
-import com.jiawei.httplib.okhttp.RequestParams;
 import com.jiawei.httplib.other.User;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.jiawei.vhttp.R.id.get;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private static final String TAG="MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,48 +55,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void get(){
         String url="http://api.nohttp.net/jsonObject";
-        RequestParams params= new RequestParams();
+        Map<String,String> params= new HashMap<>();
         params.put("name","yanzhenjie");
         params.put("pwd","123");
-        OkhttpEngine.get(url, params, null, new JsonCallback<User>() {
+        OkhttpEngine.get().url(url).params(params).tag(this)
+                .build().execute(new JsonCallback<User>() {
             @Override
-            public void failure(OkHttpException e) {
-                Log.e("111", "failure: 失败" );
+            public void success(User obj) {
+                Log.e("get", "success: "+obj.toString());
             }
 
             @Override
-            public void success(User obj) {
-                Log.e("111", "success: 成功"+obj );
+            public void failure(OkHttpException e) {
+                Log.e("get", "failure: "+e.toString());
             }
         });
+
     }
     private void post(){
         //这里替换为你的url 这个貌似失效了
         String url="http://api.nohttp.net/jsonArray";
-        RequestParams params=new RequestParams();
+        Map<String,String> params=new HashMap<>();
         params.put("name","yanzhenjie");
         params.put("pwd","123");
-        OkhttpEngine.post(url, params, null, new JsonCallback<String>() {
+        OkhttpEngine.post().url(url).params(params)
+                .build().execute(new JsonCallback<String>() {
             @Override
             public void success(String obj) {
-                Log.e("111", "success: "+obj );
+                Log.e("post", "success: "+obj.toString());
             }
 
             @Override
             public void failure(OkHttpException e) {
-
+                Log.e("post", "failure: "+e.toString());
             }
         });
     }
     private void download(){
-        String url = "http://172.30.68.144/dldir1.qq.com/qqfile/qq/TIM1.1.5/21175/TIM1.1.5.exe";
+        String url = "https://qd.myapp.com/myapp/qqteam/AndroidQQi/qq_5.2.0.6068_android_r24710_GuanWang_537051119_release.apk";
         //todo 修改路径
         String path = Environment.getExternalStorageDirectory() + File.separator + "test.exe";
 
-        OkhttpEngine.post(url, null, null, new FileCallback(path) {
+        OkhttpEngine.post().url(url).build().execute(new FileCallback(path) {
             @Override
             protected void failure(OkHttpException e) {
-                Log.e("222", "failure: " );
+                Log.e("222", "failure: " +e.toString());
             }
 
             @Override
@@ -109,27 +115,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void upload() {
+        String url="http://api.nohttp.net/upload";
         File file = new File(Environment.getExternalStorageDirectory()+"/download/", "333.zip");
         if (!file.exists())
         {
             Toast.makeText(MainActivity.this, "文件不存在，请修改文件路径", Toast.LENGTH_SHORT).show();
             return;
         }
-        OkhttpEngine.uploadFile("http://api.nohttp.net/upload", file, null, new UploadCallBack() {
-            @Override
-            public void failure(OkHttpException e) {
-                Log.e("111", "failure: ");
-            }
 
-            @Override
-            public void success(String result) {
-                Log.e("111", "success: ");
-            }
+        OkhttpEngine.post().file(file).url(url).build()
+                .execute(new UploadCallBack() {
+                    @Override
+                    public void failure(OkHttpException e) {
+                        Log.e(TAG, "failure: "+e.toString() );
+                    }
 
-            @Override
-            public void onProgress(float progress) {
-                Log.e("111", "onProgress: ");
-            }
-        });
+                    @Override
+                    public void success(String result) {
+                        Log.e(TAG, "success: "+result );
+
+                    }
+
+                    @Override
+                    public void onProgress(float progress) {
+                        Log.e(TAG, "success: "+progress );
+                    }
+                });
     }
 }
