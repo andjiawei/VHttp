@@ -33,6 +33,7 @@ public class GetBuilder extends BaseBuilder {
         return new Request.Builder().
                 url(urlBuilder.substring(0, urlBuilder.length() - 1))
                 .get()
+                .tag(tag)
                 .headers(mHeader)
                 .build();
     }

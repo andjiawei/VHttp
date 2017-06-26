@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Map<String,String> params=new HashMap<>();
         params.put("name","yanzhenjie");
         params.put("pwd","123");
-        OkhttpEngine.post().url(url).params(params)
+        OkhttpEngine.post().url(url).params(params).tag(this)
                 .build().execute(new JsonCallback<String>() {
             @Override
             public void success(String obj) {
@@ -92,11 +92,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
     private void download(){
-        String url = "https://qd.myapp.com/myapp/qqteam/AndroidQQi/qq_5.2.0.6068_android_r24710_GuanWang_537051119_release.apk";
+        String url = "http://gdown.baidu.com/data/wisegame/41a04ccb443cd61a/QQ_692.apk";
         //todo 修改路径
         String path = Environment.getExternalStorageDirectory() + File.separator + "test.exe";
 
-        OkhttpEngine.post().url(url).build().execute(new FileCallback(path) {
+        OkhttpEngine.post().url(url).tag(this).build().execute(new FileCallback(path) {
             @Override
             protected void failure(OkHttpException e) {
                 Log.e("222", "failure: " +e.toString());
@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
 
-        OkhttpEngine.post().file(file).url(url).build()
+        OkhttpEngine.post().file(file).tag(this).url(url).build()
                 .execute(new UploadCallBack() {
                     @Override
                     public void failure(OkHttpException e) {
@@ -141,5 +141,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Log.e(TAG, "success: "+progress );
                     }
                 });
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.e(TAG, "onDestroy: " );
+        OkhttpEngine.getInstance().cancelTag(this);
+        super.onDestroy();
     }
 }

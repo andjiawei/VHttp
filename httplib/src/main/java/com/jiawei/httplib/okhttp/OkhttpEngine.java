@@ -11,6 +11,7 @@ import com.jiawei.httplib.request.RequestCall;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
@@ -18,6 +19,7 @@ import javax.net.ssl.SSLSession;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Headers;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -27,7 +29,6 @@ import okhttp3.Response;
  * Created by jiawei on 2017/6/9.
  * <p>
  * okhttp的代理封装类
- *
  */
 
 public class OkhttpEngine {
@@ -36,7 +37,7 @@ public class OkhttpEngine {
     private static final int TIME_OUT = 30;
 
     private static OkHttpClient mOkHttpClient;
-    private static Handler mHandler=new Handler();
+    private static Handler mHandler = new Handler();
 
     static {
         //使用builder模式 做一些参数配置
@@ -79,8 +80,10 @@ public class OkhttpEngine {
     public static OkHttpClient getOkHttpClient() {
         return mOkHttpClient;
     }
-    public static OkhttpEngine instance=new OkhttpEngine();
-    public static OkhttpEngine getInstance(){
+
+    public static OkhttpEngine instance = new OkhttpEngine();
+
+    public static OkhttpEngine getInstance() {
         return instance;
     }
 
@@ -98,41 +101,68 @@ public class OkhttpEngine {
      * 获取getBuilder
      * 将get所需要的参数交给Builder
      * Request类在{@link RequestCall}
+     *
      * @return {@link GetBuilder}
      */
     public static GetBuilder get() {
         return new GetBuilder();
     }
+
     public static PostBuilder post() {
         return new PostBuilder();
     }
-    public static PostBuilder upload() {return null;}
+
+    public static PostBuilder upload() {
+        return null;
+    }
 
 
-//    private ArrayList<String> handleCookie(Headers headers) {
-//        ArrayList<String> tempList = new ArrayList<>();
-//        for (int i = 0; i < headers.size(); i++) {
-//            if (headers.name(i).equalsIgnoreCase(COOKIE_STORE)) {
-//                tempList.add(headers.value(i));
-//            }
-//
-//        }
-//        return tempList;
-//    }
+    private ArrayList<String> handleCookie(Headers headers) {
+        ArrayList<String> tempList = new ArrayList<>();
+        for (int i = 0; i < headers.size(); i++) {
+            if (headers.name(i).equalsIgnoreCase(COOKIE_STORE)) {
+                tempList.add(headers.value(i));
+            }
 
-    public Call execute(Request request, final ICallback callback){
+        }
+        return tempList;
+    }
+
+    public Call execute(Request request, final ICallback callback) {
         Call call = mOkHttpClient.newCall(request);
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                callback.onFailure(call,e);
+                callback.onFailure(call, e);
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                callback.onResponse(call,response);
+                callback.onResponse(call, response);
             }
         });
         return call;
+    }
+
+    public void cancelTag(Object tag) {
+        for (Call call : mOkHttpClient.dispatcher().queuedCalls()) {
+            if (tag.equals(call.request().tag())) {
+                call.cancel();
+            }
+        }
+        for (Call call : mOkHttpClient.dispatcher().runningCalls()) {
+            if (tag.equals(call.request().tag())) {
+                call.cancel();
+            }
+        }
+    }
+
+    public void cancelAll() {
+        for (Call call : mOkHttpClient.dispatcher().queuedCalls()) {
+            call.cancel();
+        }
+        for (Call call : mOkHttpClient.dispatcher().runningCalls()) {
+            call.cancel();
+        }
     }
 }

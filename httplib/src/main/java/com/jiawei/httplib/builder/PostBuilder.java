@@ -64,6 +64,7 @@ public class PostBuilder extends BaseBuilder {
 
         Request request = new Request.Builder()
                 .url(url)
+                .tag(tag)
                 .post(countingRequestBody)
                 .build();
 
