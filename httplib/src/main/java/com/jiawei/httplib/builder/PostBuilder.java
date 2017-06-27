@@ -62,10 +62,20 @@ public class PostBuilder extends BaseBuilder {
             }
         });
 
+        //添加请求头
+        Headers.Builder mHeaderBuild = new Headers.Builder();
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                mHeaderBuild.add(entry.getKey(), entry.getValue());
+            }
+        }
+        Headers header = mHeaderBuild.build();
+
         Request request = new Request.Builder()
                 .url(url)
                 .tag(tag)
                 .post(countingRequestBody)
+                .headers(header)
                 .build();
 
         return request;

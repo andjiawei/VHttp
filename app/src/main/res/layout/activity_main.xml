@@ -1,36 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<com.google.android.flexbox.FlexboxLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:flexWrap="wrap"
+    app:alignContent="flex_start"
     >
 
-        <Button
-            android:id="@+id/get"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="get"
-            />
+    <Button
+        android:id="@+id/get"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="get"
+        />
 
-        <Button
-            android:id="@+id/post"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="post"
-            />
+    <Button
+        android:id="@+id/post"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="post"
+        />
 
-        <Button
-            android:id="@+id/download"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="download"
-            />
+    <Button
+        android:id="@+id/download"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="download"
+        />
 
-        <Button
-            android:id="@+id/upload"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="upload"
-            />
+    <Button
+        android:id="@+id/upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="upload"
+        />
 
-</LinearLayout>
+    <Button
+        android:id="@+id/json"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="json"
+        />
+
+
+</com.google.android.flexbox.FlexboxLayout>

@@ -4,6 +4,7 @@ import android.os.Handler;
 
 import com.jiawei.httplib.builder.GetBuilder;
 import com.jiawei.httplib.builder.PostBuilder;
+import com.jiawei.httplib.builder.PostStringBuilder;
 import com.jiawei.httplib.callback.ICallback;
 import com.jiawei.httplib.cookie.SimpleCookieJar;
 import com.jiawei.httplib.https.HttpsUtils;
@@ -110,6 +111,10 @@ public class OkhttpEngine {
 
     public static PostBuilder post() {
         return new PostBuilder();
+    }
+
+    public static PostStringBuilder postString() {
+        return new PostStringBuilder();
     }
 
     public static PostBuilder upload() {

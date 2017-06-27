@@ -18,6 +18,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import okhttp3.MediaType;
+
 import static com.jiawei.vhttp.R.id.get;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -32,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.post).setOnClickListener(this);
         findViewById(R.id.download).setOnClickListener(this);
         findViewById(R.id.upload).setOnClickListener(this);
+        findViewById(R.id.json).setOnClickListener(this);
     }
 
     @Override
@@ -46,11 +49,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.download:
                 download();
                 break;
-
             case R.id.upload:
                 upload();
                 break;
+            case R.id.json:
+                json();
+                break;
         }
+    }
+
+    private void json() {
+        String url="http://api.nohttp.net/upload";
+        OkhttpEngine.postString().mediaType(MediaType.parse("application/json; charset=utf-8"))
+                .content("{'user':aa'jiawei'}")
+                .url(url).tag(this)
+                .build().execute(new JsonCallback<String>() {
+            @Override
+            public void success(String obj) {
+                Log.e("postString", "success: "+obj.toString());
+            }
+
+            @Override
+            public void failure(OkHttpException e) {
+                Log.e("postString", "failure: "+e.toString());
+            }
+        });
     }
 
     private void get(){
