@@ -58,10 +58,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    //todo 接口待测试
     private void json() {
         String url="http://api.nohttp.net/upload";
         OkhttpEngine.postString().mediaType(MediaType.parse("application/json; charset=utf-8"))
-                .content("{'user':aa'jiawei'}")
+                .content("{'user':'jiawei'}")
                 .url(url).tag(this)
                 .build().execute(new JsonCallback<String>() {
             @Override
@@ -140,13 +141,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void upload() {
         String url="http://api.nohttp.net/upload";
         File file = new File(Environment.getExternalStorageDirectory()+"/download/", "333.zip");
-        if (!file.exists())
+        File file2 = new File(Environment.getExternalStorageDirectory()+"/download/", "444.zip");
+        if (!file.exists()||!file2.exists())
         {
             Toast.makeText(MainActivity.this, "文件不存在，请修改文件路径", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        OkhttpEngine.post().file(file).tag(this).url(url).build()
+        OkhttpEngine.post().addFile(file).addFile(file2).tag(this).url(url).build()
                 .execute(new UploadCallBack() {
                     @Override
                     public void failure(OkHttpException e) {

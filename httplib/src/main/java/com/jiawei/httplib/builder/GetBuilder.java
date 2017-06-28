@@ -12,7 +12,7 @@ import okhttp3.Request;
  * get的请求参数
  */
 
-public class GetBuilder extends BaseBuilder {
+public class GetBuilder extends BaseBuilder<GetBuilder> {
 
     @Override
     public Request createRequest(ICallback callback) {

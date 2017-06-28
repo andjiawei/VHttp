@@ -10,33 +10,35 @@ import okhttp3.Request;
 
 /**
  * Created by jiawei on 2017/6/21.
+ * 这里引入泛型解决了 使用Builder链式调用的顺序问题
+ * 有可能父类的return this 调不到子类的方法
  */
 
-public abstract class BaseBuilder {
+public abstract class BaseBuilder<T extends BaseBuilder > {
 
     String url;
     Object tag;
     Map<String, String> headers;
     Map<String, String> params;
 
-    public BaseBuilder url(String url){
+    public T url(String url){
         this.url=url;
-        return this;
+        return (T)this;
     }
 
-    public BaseBuilder tag(Object tag){
+    public T tag(Object tag){
         this.tag=tag;
-        return this;
+        return (T)this;
     }
 
-    public BaseBuilder params(Map<String, String> params){
+    public T params(Map<String, String> params){
         this.params=params;
-        return this;
+        return (T)this;
     }
 
-    public BaseBuilder header(Map<String, String> headers){
+    public T header(Map<String, String> headers){
         this.headers=headers;
-        return this;
+        return (T)this;
     }
 
     public RequestCall build() {

@@ -13,7 +13,7 @@ import okhttp3.RequestBody;
  * Created by jiawei on 2017/6/27.
  */
 
-public class PostStringBuilder extends BaseBuilder {
+public class PostStringBuilder extends BaseBuilder<PostStringBuilder> {
 
     private String mcontent;
     private MediaType mMediaType;

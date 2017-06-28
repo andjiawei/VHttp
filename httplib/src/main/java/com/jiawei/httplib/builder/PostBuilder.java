@@ -9,6 +9,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import okhttp3.FormBody;
@@ -25,12 +27,12 @@ import okhttp3.RequestBody;
  * callback需要在{@link RequestCall}才有，因此需要加一层传过去
  */
 
-public class PostBuilder extends BaseBuilder {
+public class PostBuilder extends BaseBuilder<PostBuilder> {
 
-    private File file;
+    private List<File> files = new ArrayList<>();
 
-    public BaseBuilder file(File file){
-        this.file=file;
+    public PostBuilder addFile(File file){
+        files.add(file);
         return this;
     }
 
@@ -38,7 +40,7 @@ public class PostBuilder extends BaseBuilder {
     public Request createRequest(final ICallback callback) {
 
         RequestBody formBody;
-        if (file == null) {
+        if (files.isEmpty()) {
             FormBody.Builder builder = new FormBody.Builder();
             addParams(builder, params);
             formBody = builder.build();
@@ -46,9 +48,10 @@ public class PostBuilder extends BaseBuilder {
             MultipartBody.Builder builder = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM);
             addParams(builder, params);
-
-            RequestBody fileBody = RequestBody.create(MediaType.parse(guessMimeType(file.getName())),file);
-            builder.addFormDataPart(file.getName(), file.getName(), fileBody);
+            for (int i=0;i<files.size();i++){
+                RequestBody fileBody = RequestBody.create(MediaType.parse(guessMimeType(files.get(i).getName())),files.get(i));
+                builder.addFormDataPart(files.get(i).getName(), files.get(i).getName(), fileBody);
+            }
             formBody = builder.build();
         }
 
