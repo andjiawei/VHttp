@@ -12,7 +12,7 @@ import com.jiawei.httplib.callback.JsonCallback;
 import com.jiawei.httplib.callback.UploadCallBack;
 import com.jiawei.httplib.exception.OkHttpException;
 import com.jiawei.httplib.okhttp.OkhttpEngine;
-import com.jiawei.httplib.other.User;
+import com.jiawei.httplib.request.CacheMode;
 
 import java.io.File;
 import java.util.HashMap;
@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        OkhttpEngine.getInstance().init(getApplicationContext());
         findViewById(R.id.get).setOnClickListener(this);
         findViewById(R.id.post).setOnClickListener(this);
         findViewById(R.id.download).setOnClickListener(this);
@@ -78,14 +79,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void get(){
-        String url="http://api.nohttp.net/jsonObject";
+        String url="http://v.juhe.cn/weather/index";
         Map<String,String> params= new HashMap<>();
-        params.put("name","yanzhenjie");
-        params.put("pwd","123");
-        OkhttpEngine.get().url(url).params(params).tag(this)
-                .build().execute(new JsonCallback<User>() {
+        //key=f5098008cfbfa83e7bfa222693077cdf
+        params.put("cityname","郑州");
+        params.put("key","f5098008cfbfa83e7bfa222693077cdf");
+        OkhttpEngine.get().url(url).params(params).tag(this).cache(CacheMode.DefaultCache).cacheKey("defaultKey")
+                .build().execute(new JsonCallback<String>() {
             @Override
-            public void success(User obj) {
+            public void success(String obj) {
                 Log.e("get", "success: "+obj.toString());
             }
 
@@ -93,16 +95,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void failure(OkHttpException e) {
                 Log.e("get", "failure: "+e.toString());
             }
+
+            @Override
+            public void onCache(Object data) {
+                Log.e(TAG, "onCache: "+data.toString() );
+            }
         });
 
     }
     private void post(){
         //这里替换为你的url 这个貌似失效了
-        String url="http://api.nohttp.net/jsonArray";
+        String url="http://v.juhe.cn/weather/uni";
         Map<String,String> params=new HashMap<>();
-        params.put("name","yanzhenjie");
-        params.put("pwd","123");
-        OkhttpEngine.post().url(url).params(params).tag(this)
+        params.put("key","f5098008cfbfa83e7bfa222693077cdf");
+        OkhttpEngine.post().url(url).params(params).tag(this).cache(CacheMode.DefaultCache).cacheKey("postKey")
                 .build().execute(new JsonCallback<String>() {
             @Override
             public void success(String obj) {
@@ -112,6 +118,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void failure(OkHttpException e) {
                 Log.e("post", "failure: "+e.toString());
+            }
+
+            @Override
+            public void onCache(Object data) {
+                Log.e(TAG, "onCache: "+data.toString());
             }
         });
     }
@@ -125,7 +136,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             protected void failure(OkHttpException e) {
                 Log.e("222", "failure: " +e.toString());
             }
-
             @Override
             protected void success(File file) {
                 Log.e("222", "success: " );

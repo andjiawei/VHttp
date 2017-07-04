@@ -1,7 +1,5 @@
 package com.jiawei.httplib.request;
 
-import com.jiawei.httplib.callback.ICallback;
-
 import okhttp3.Request;
 
 /**
@@ -9,11 +7,7 @@ import okhttp3.Request;
  */
 
 public class BaseRequest {
-    
-    //真正的request
     public Request mRequest;
-
-    public Request createRequest(ICallback callback) {
-        return mRequest;
-    }
+    public CacheMode mCacheMode=CacheMode.NoCache;
+    public String cacheKey;
 }

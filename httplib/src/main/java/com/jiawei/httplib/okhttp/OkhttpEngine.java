@@ -1,14 +1,22 @@
 package com.jiawei.httplib.okhttp;
 
+import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import com.jiawei.httplib.builder.GetBuilder;
 import com.jiawei.httplib.builder.PostBuilder;
 import com.jiawei.httplib.builder.PostStringBuilder;
+import com.jiawei.httplib.cache.CacheEntity;
+import com.jiawei.httplib.cache.CacheManager;
+import com.jiawei.httplib.cache.WrapResponse;
 import com.jiawei.httplib.callback.ICallback;
 import com.jiawei.httplib.cookie.SimpleCookieJar;
+import com.jiawei.httplib.exception.OkHttpException;
 import com.jiawei.httplib.https.HttpsUtils;
+import com.jiawei.httplib.request.BaseRequest;
 import com.jiawei.httplib.request.RequestCall;
+import com.jiawei.httplib.utils.HeaderParser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +41,7 @@ import okhttp3.Response;
  */
 
 public class OkhttpEngine {
+    private final String TAG="OkhttpEngine";
 
     protected static final String COOKIE_STORE = "Set-Cookie"; // decide the server it
     private static final int TIME_OUT = 30;
@@ -78,6 +87,8 @@ public class OkhttpEngine {
         mOkHttpClient = okHttpClientBuilder.build();
     }
 
+    private Context mContext;
+
     public static OkHttpClient getOkHttpClient() {
         return mOkHttpClient;
     }
@@ -86,6 +97,11 @@ public class OkhttpEngine {
 
     public static OkhttpEngine getInstance() {
         return instance;
+    }
+
+    //数据库需要使用到context
+    public void init(Context context){
+        mContext =context;
     }
 
     /**
@@ -133,8 +149,14 @@ public class OkhttpEngine {
         return tempList;
     }
 
-    public Call execute(Request request, final ICallback callback) {
-        Call call = mOkHttpClient.newCall(request);
+    public Call execute(final BaseRequest request, final ICallback callback) {
+        CacheEntity<Object> cacheEntity = CacheManager.getInstance().get(request.cacheKey);
+        if(cacheEntity!=null){
+            callback.onCache(cacheEntity.getData());
+        }else{
+            Log.e(TAG, ": 无缓存");
+        }
+        Call call = mOkHttpClient.newCall(request.mRequest);
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -143,10 +165,42 @@ public class OkhttpEngine {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                callback.onResponse(call, response);
+                WrapResponse wrapResponse=new WrapResponse(response,response.body().string());
+                if (response.code() == 404 || response.code() >= 500) {
+                    //todo 完善异常信息
+                    callback.onFailure(call, new OkHttpException(response.code(),"网络错误"));
+                    return;
+                }
+
+                switch (request.mCacheMode){
+                    case DefaultCache://缓存
+                        Log.e(TAG, "DefaultCache: 缓存的小伙伴");
+                        saveCache(request,wrapResponse);
+                        break;
+                    case NoCache://清除
+                        Log.e(TAG, "NoCache: 要清除的小伙伴");
+                        break;
+                    case CacheData:
+                        break;
+                }
+
+                callback.onResponse(call, wrapResponse);
             }
         });
         return call;
+    }
+
+    private void saveCache(BaseRequest request, WrapResponse response) throws IOException {
+
+        CacheEntity<String> cache = HeaderParser.createCacheEntity(response.getResponse().headers(), response.getBodyString(), request.mCacheMode, request.cacheKey);
+        if (cache == null) {
+            //服务器不需要缓存，移除本地缓存
+            CacheManager.getInstance().remove(request.cacheKey);
+        } else {
+            //缓存命中，更新缓存
+            CacheManager.getInstance().replace(request.cacheKey,cache);
+        }
+
     }
 
     public void cancelTag(Object tag) {
@@ -169,5 +223,9 @@ public class OkhttpEngine {
         for (Call call : mOkHttpClient.dispatcher().runningCalls()) {
             call.cancel();
         }
+    }
+
+    public Context getContext() {
+        return mContext;
     }
 }

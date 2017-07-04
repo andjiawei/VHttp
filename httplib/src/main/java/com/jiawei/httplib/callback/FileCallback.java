@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
+import com.jiawei.httplib.cache.WrapResponse;
 import com.jiawei.httplib.exception.OkHttpException;
 
 import java.io.File;
@@ -13,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import okhttp3.Call;
-import okhttp3.Response;
 
 /**
  * 专门处理文件下载回调
@@ -48,7 +48,7 @@ public abstract class FileCallback extends ICallback {
     }
 
     @Override
-    public void onFailure(final Call call, final IOException ioexception) {
+    public void onFailure(final Call call, final Exception ioexception) {
         mDeliveryHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -58,7 +58,7 @@ public abstract class FileCallback extends ICallback {
     }
 
     @Override
-    public void onResponse(Call call, Response response) throws IOException {
+    public void onResponse(Call call, WrapResponse response) throws IOException {
         final File file = handleResponse(response);
         mDeliveryHandler.post(new Runnable() {
             @Override
@@ -80,7 +80,7 @@ public abstract class FileCallback extends ICallback {
      * @param response
      * @return
      */
-    private File handleResponse(Response response) {
+    private File handleResponse(WrapResponse response) {
         if (response == null) {
             return null;
         }
@@ -96,8 +96,8 @@ public abstract class FileCallback extends ICallback {
             checkLocalFilePath(mFilePath);
             file = new File(mFilePath);
             fos = new FileOutputStream(file);
-            inputStream = response.body().byteStream();
-            sumLength = (double) response.body().contentLength();
+            inputStream = response.getResponse().body().byteStream();
+            sumLength = (double) response.getResponse().body().contentLength();
 
             while ((length = inputStream.read(buffer)) != -1) {
                 fos.write(buffer, 0, length);

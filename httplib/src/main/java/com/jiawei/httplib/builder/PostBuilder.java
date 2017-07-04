@@ -2,6 +2,9 @@ package com.jiawei.httplib.builder;
 
 import com.jiawei.httplib.callback.ICallback;
 import com.jiawei.httplib.okhttp.CountingRequestBody;
+import com.jiawei.httplib.request.BaseRequest;
+import com.jiawei.httplib.request.CacheMode;
+import com.jiawei.httplib.request.PostRequest;
 import com.jiawei.httplib.request.RequestCall;
 
 import java.io.File;
@@ -37,8 +40,8 @@ public class PostBuilder extends BaseBuilder<PostBuilder> {
     }
 
     @Override
-    public Request createRequest(final ICallback callback) {
-
+    public BaseRequest createRequest(final ICallback callback) {
+        BaseRequest postRequest=new PostRequest();
         RequestBody formBody;
         if (files.isEmpty()) {
             FormBody.Builder builder = new FormBody.Builder();
@@ -81,7 +84,10 @@ public class PostBuilder extends BaseBuilder<PostBuilder> {
                 .headers(header)
                 .build();
 
-        return request;
+        postRequest.mRequest=request;
+        postRequest.cacheKey=cacheKey;
+        postRequest.mCacheMode= CacheMode.DefaultCache;
+        return postRequest;
     }
 
     private static void addParams(MultipartBody.Builder builder, Map<String, String> params) {

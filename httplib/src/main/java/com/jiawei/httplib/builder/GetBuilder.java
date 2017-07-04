@@ -1,6 +1,8 @@
 package com.jiawei.httplib.builder;
 
 import com.jiawei.httplib.callback.ICallback;
+import com.jiawei.httplib.request.BaseRequest;
+import com.jiawei.httplib.request.GetRequest;
 
 import java.util.Map;
 
@@ -15,7 +17,8 @@ import okhttp3.Request;
 public class GetBuilder extends BaseBuilder<GetBuilder> {
 
     @Override
-    public Request createRequest(ICallback callback) {
+    public BaseRequest createRequest(ICallback callback) {
+        BaseRequest getRequest=new GetRequest();
         StringBuilder urlBuilder = new StringBuilder(url).append("?");
         if (params != null) {
             for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -30,12 +33,17 @@ public class GetBuilder extends BaseBuilder<GetBuilder> {
             }
         }
         Headers mHeader = mHeaderBuild.build();
-        return new Request.Builder().
+
+        Request request = new Request.Builder().
                 url(urlBuilder.substring(0, urlBuilder.length() - 1))
                 .get()
                 .tag(tag)
                 .headers(mHeader)
                 .build();
+        getRequest.mRequest=request;
+        getRequest.mCacheMode=mMode;
+        getRequest.cacheKey=cacheKey;
+        return getRequest;
     }
 
 }

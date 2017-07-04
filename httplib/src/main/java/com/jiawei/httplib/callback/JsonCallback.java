@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import com.jiawei.httplib.cache.WrapResponse;
 import com.jiawei.httplib.exception.OkHttpException;
 import com.jiawei.httplib.utils.GsonUtils;
 
@@ -13,7 +14,6 @@ import java.util.ArrayList;
 
 import okhttp3.Call;
 import okhttp3.Headers;
-import okhttp3.Response;
 
 /**
  * Created by jiawei on 2017/6/12.
@@ -35,7 +35,7 @@ public abstract class JsonCallback<T> extends ICallback<T> {
     }
 
     @Override
-    public void onFailure(Call call, final IOException e) {
+    public void onFailure(Call call, final Exception e) {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -45,9 +45,9 @@ public abstract class JsonCallback<T> extends ICallback<T> {
     }
 
     @Override
-    public void onResponse(Call call, Response response) throws IOException {
-        final String result = response.body().string();
-        final ArrayList<String> cookieLists = handleCookie(response.headers());
+    public void onResponse(Call call, WrapResponse response) throws IOException {
+        final String result = response.getBodyString();
+        final ArrayList<String> cookieLists = handleCookie(response.getResponse().headers());
         mHandler.post(new Runnable() {
             @Override
             public void run() {

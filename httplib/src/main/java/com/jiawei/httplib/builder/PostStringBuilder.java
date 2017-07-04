@@ -1,6 +1,8 @@
 package com.jiawei.httplib.builder;
 
 import com.jiawei.httplib.callback.ICallback;
+import com.jiawei.httplib.request.BaseRequest;
+import com.jiawei.httplib.request.PostRequest;
 
 import java.util.Map;
 
@@ -34,7 +36,8 @@ public class PostStringBuilder extends BaseBuilder<PostStringBuilder> {
     }
 
     @Override
-    public Request createRequest(ICallback callback) {
+    public BaseRequest createRequest(ICallback callback) {
+        BaseRequest postRequest=new PostRequest();
         //添加请求头
         Headers.Builder mHeaderBuild = new Headers.Builder();
         if (headers != null) {
@@ -50,7 +53,7 @@ public class PostStringBuilder extends BaseBuilder<PostStringBuilder> {
                 .headers(header)
                 .post(requestBody)
                 .build();
-
-        return request;
+        postRequest.mRequest=request;
+        return postRequest;
     }
 }
